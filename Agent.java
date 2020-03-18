@@ -15,10 +15,10 @@ import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 import tools.pathfinder.Node;
 
+import javax.swing.*;
+
 public class Agent extends AbstractPlayer{
-    //Greedy Camel:
-    // 1) Busca la puerta más cercana.
-    // 2) Escoge la accion que minimiza la distancia del camello a la puerta.
+
 
     Vector2d fescala;
     Vector2d portal;
@@ -49,9 +49,9 @@ public class Agent extends AbstractPlayer{
      * @param stateObs the current state observation
      * @return whether 'position' there isn't an obstacle
      */
-    boolean isObstacle(Vector2d position, StateObservation stateObs){
-        int x = (int)position.x;
-        int y = (int)position.y;
+    boolean isObstacle(Node position, StateObservation stateObs){
+        int x = (int)position.position.x;
+        int y = (int)position.position.y;
 
         for(core.game.Observation obs : stateObs.getObservationGrid()[x][y])
             if(obs.itype == 0) return true;
@@ -66,10 +66,9 @@ public class Agent extends AbstractPlayer{
      * @param stateObs the current state of the game
      * @return An ArrayList of recheable neighbors
      */
-    ArrayList<Node> recheable(StateObservation stateObs){
+    ArrayList<Node> recheable(Node pos, StateObservation stateObs){
         ArrayList<Node> vecinos = new ArrayList<>();
-        Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
-                stateObs.getAvatarPosition().y / fescala.y);
+        Vector2d avatar =  new Vector2d(pos.position.x,pos.position.y);
 
         int x = (int) avatar.x;
         int y = (int) avatar.y;
@@ -79,8 +78,9 @@ public class Agent extends AbstractPlayer{
 
         for(int i = 0; i < x_axis.length; i++){
             Vector2d vecinoPos = new Vector2d(x + x_axis[i], y + y_axis[i]);
-            if(!isObstacle(vecinoPos,stateObs)) vecinos.add(new Node(vecinoPos));
+            vecinos.add(new Node(vecinoPos));
         }
+
         return vecinos;
     }
 
@@ -92,28 +92,36 @@ public class Agent extends AbstractPlayer{
      * @return total estimated cost
      */
 
-    double coste(Vector2d pos, StateObservation stateObs){
+    double coste(Node pos, Node obj, StateObservation stateObs){
         double Cost;
 
-        double xCost = Math.abs(pos.x - portal.x);
-        double yCost = Math.abs(pos.y - portal.y);
+        double xCost = Math.abs(pos.position.x - obj.position.x);
+        double yCost = Math.abs(pos.position.y - obj.position.y);
 
-        Cost = xCost + yCost;
+        if(isObstacle(pos,stateObs)) Cost = xCost + yCost + 100.0;
+        else Cost = xCost + yCost;
 
         return Cost;
 
     }
 
     ArrayList<Node> calculatePath(Node node){
+        ArrayList<Node> aux = new ArrayList<>();
         ArrayList<Node> path = new ArrayList<>();
 
         while(node != null){
             if(node.parent != null){
-                node.setMoveDir(node.parent);
-                path.add(0,node);
+                aux.add(node);
             }
             node = node.parent;
         }
+
+        int tam = aux.size()-1;
+
+        for(int i = tam; i >= 0; i--) {
+            path.add(aux.get(i));
+        }
+
         return path;
     }
 
@@ -123,65 +131,47 @@ public class Agent extends AbstractPlayer{
      * @return the list of actions to reach the portal
      */
 
-        Node pathfinding_A(StateObservation stateObs, Vector2d startPos){
+    Node pathfinding_A(StateObservation stateObs, Node startPos){
 
         Node node = null;
-        Node start =new Node(startPos);
+        Node obj = new Node(portal);
 
         PriorityQueue<Node> Abiertos = new PriorityQueue<>();
         PriorityQueue<Node> Cerrados = new PriorityQueue<>();
 
-        start.estimatedCost = coste(startPos,stateObs);
-        start.totalCost = 0.0f;
+        startPos.totalCost = 0.0f;
+        startPos.estimatedCost = coste(startPos, obj, stateObs);
 
-        Abiertos.add(start);
+        Abiertos.add(startPos);
 
-        while(!Abiertos.isEmpty()){
+        while (!Abiertos.isEmpty()){
 
             node = Abiertos.poll();
             Cerrados.add(node);
 
-            int x = (int) node.position.x ;
-            int y = (int) node.position.x;
-            if( x == portal.x && y == portal.y) return node;
+            if(node.position.x == portal.x && node.position.y == portal.y) return node;
 
-            ArrayList<Node> vecinos = recheable(stateObs);
 
-            for(Node vecino : vecinos){
-                int vecinox = (int) vecino.position.x;
-                int vecinoy = (int) vecino.position.y;
-                Vector2d aux = new Vector2d(vecinox,vecinoy);
+            ArrayList<Node> vecinos = recheable(node, stateObs);
 
-                double curDistance = coste(aux, stateObs);
 
-                if(!Abiertos.contains(vecino) && !Cerrados.contains(vecino)) {
-                    vecino.totalCost = curDistance + node.totalCost;
-                    vecino.estimatedCost = curDistance;
-                    vecino.parent = node;
+            for(Node vecino:vecinos){
+                vecino.estimatedCost = coste(vecino, obj, stateObs);
 
+                if(!Abiertos.contains(vecino) && !Cerrados.contains(vecino)){
                     Abiertos.add(vecino);
+                    vecino.parent = node;
                 }
-                else if(vecino.totalCost < node.totalCost ){
-                    vecino.parent = node;
-
-                    Abiertos.remove(vecino);
-                    Cerrados.remove(vecino);
-                    Abiertos.add(vecino);
+                else if(vecino.estimatedCost < node.estimatedCost){
+                    Abiertos.remove(node);
                 }
             }
 
         }
 
-        int x = (int) node.position.x ;
-        int y = (int) node.position.x;
-
-        assert node != null;
-
-        if( x != portal.x && y != portal.y) return null;
-
         return node;
-
     }
+
 
     Types.ACTIONS getAction(Vector2d from, Vector2d to){
         if(to.x != from.x)
@@ -204,15 +194,19 @@ public class Agent extends AbstractPlayer{
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
 
-        Node path = pathfinding_A(stateObs, avatar);
+        Node inicio = new Node(avatar);
 
-        ArrayList<Node> path_calculado = calculatePath(path);
+        Node path_calculado =  pathfinding_A(stateObs, inicio);
 
-        Vector2d siguientePos = path_calculado.get(0).position;
+        ArrayList<Node> path = calculatePath(path_calculado);
 
-        ACTIONS action = getAction(avatar,siguientePos);
+        Vector2d siguientePos = new Vector2d(path.get(0).position.x, path.get(0).position.y);
+
+        ACTIONS action = getAction(avatar, siguientePos);
 
         return action;
+
+
 
 
 
