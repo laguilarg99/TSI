@@ -17,6 +17,7 @@ import tools.Vector2d;
 import tools.pathfinder.Node;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 public class Agent extends AbstractPlayer{
 
@@ -28,6 +29,9 @@ public class Agent extends AbstractPlayer{
 
     //posicion de resources
     Vector2d gema;
+
+    //posicion de NPC
+    Vector2d Scorpion;
 
     //Camino actual
     ArrayList<Node> path = new ArrayList<>();
@@ -93,7 +97,8 @@ public class Agent extends AbstractPlayer{
 
         for(int i = 0; i < x_axis.length; i++){
             Vector2d vecinoPos = new Vector2d(x + x_axis[i], y + y_axis[i]);
-            vecinos.add(new Node(vecinoPos));
+            Node aux = new Node(vecinoPos);
+            if(!isObstacle(aux,stateObs)) vecinos.add(new Node(vecinoPos));
         }
 
         return vecinos;
@@ -205,6 +210,36 @@ public class Agent extends AbstractPlayer{
 
     }
 
+    Vector2d Reactivo(Vector2d calor[][], Vector2d avatar, StateObservation StateObs){
+
+        Vector2d siguientePos = new Vector2d(0, 0);
+
+        Node sol = new Node(siguientePos);
+        Node aux = new Node(avatar);
+
+        double dis = 0;
+
+        for(int i = 0; i < calor.length; i++){
+            for(int j = 0; j < calor[i].length; j++){
+                if(calor[i][j].x == avatar.x && calor[i][j].y == avatar.y){
+                    ArrayList<Node> vecinos = recheable(aux, StateObs);
+                    for(Node vecino : vecinos){
+                        double distancia = Math.abs(Scorpion.x - vecino.position.x) + Math.abs(Scorpion.y - vecino.position.y);
+                        if(distancia > dis){
+                            dis = distancia;
+                            sol = vecino;
+                        }
+                    }
+                }
+            }
+        }
+
+        siguientePos = new Vector2d(sol.position.x, sol.position.y);
+        System.out.println(siguientePos);
+        return siguientePos;
+
+    }
+
     /**
      * return the best action to arrive faster to the closest portal
      * @param stateObs Observation of the current state.
@@ -219,7 +254,26 @@ public class Agent extends AbstractPlayer{
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
 
+        Vector2d siguientePos  = new Vector2d(0,0);
         Node nuevaPos = new Node(avatar);
+
+        //Se crea una lista de observaciones de NPC, ordenada por cercania al avatar
+        ArrayList<Observation>[] Npc = stateObs.getNPCPositions(stateObs.getAvatarPosition());
+
+
+        //Seleccionamos el npc más cercano
+        Scorpion = Npc[0].get(0).position;
+        Scorpion.x = Math.floor(Scorpion.x/fescala.x);
+        Scorpion.y = Math.floor(Scorpion.y/fescala.y);
+
+        //Mapa de calor
+        Vector2d calor[][] = new Vector2d[7][7];
+
+        for(int i = 0; i < calor.length; i++){
+            for(int j = 0; j < calor[i].length; j++){
+                calor[i][j] = new Vector2d((Scorpion.x - calor.length/2 + i),(Scorpion.y - calor.length/2 + j));
+            }
+        }
 
         /*
         if(avatar.equals(gema)){
@@ -245,16 +299,27 @@ public class Agent extends AbstractPlayer{
             path = pathfinding_A(stateObs, nuevaPos, obj);
         }
         */
+
         ACTIONS action;
-        
-        /*
-        try{
+
+        /*try{
             Vector2d siguientePos = path.get(0).position;
             action = getAction(avatar,siguientePos);
         }catch (IndexOutOfBoundsException|NullPointerException e){
             action = ACTIONS.ACTION_NIL;
+        }*/
+
+        try{
+
+            siguientePos = Reactivo(calor,avatar,stateObs);
+            if(siguientePos.x != 0 || siguientePos.y != 0)
+                action = getAction(avatar,siguientePos);
+            else
+                action = ACTIONS.ACTION_NIL;
+
+        }catch (IndexOutOfBoundsException|NullPointerException e){
+            action = ACTIONS.ACTION_NIL;
         }
-        */
 
         return action;
 
