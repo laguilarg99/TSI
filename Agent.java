@@ -9,6 +9,7 @@ import java.util.Vector;
 import core.game.Observation;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
+import core.player.Player;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
@@ -19,9 +20,20 @@ import javax.swing.*;
 
 public class Agent extends AbstractPlayer{
 
-
+    //escala
     Vector2d fescala;
+
+    //posicion del portal
     Vector2d portal;
+
+    //posicion de resources
+    Vector2d gema;
+
+    //Camino actual
+    ArrayList<Node> path = new ArrayList<>();
+
+    //Numero de gemas
+    int NumGems;
 
     /**
      * initialize all variables for the agent
@@ -36,10 +48,13 @@ public class Agent extends AbstractPlayer{
         //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
         ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
 
+        NumGems = 0;
         //Seleccionamos el portal mas proximo
         portal = posiciones[0].get(0).position;
         portal.x = Math.floor(portal.x / fescala.x);
         portal.y = Math.floor(portal.y / fescala.y);
+
+        ArrayList<Node> Path = new ArrayList<>();
     }
 
 
@@ -98,7 +113,7 @@ public class Agent extends AbstractPlayer{
         double xCost = Math.abs(pos.position.x - obj.position.x);
         double yCost = Math.abs(pos.position.y - obj.position.y);
 
-        if(isObstacle(pos,stateObs)) Cost = xCost + yCost + 100.0;
+        if(isObstacle(pos,stateObs)) Cost = xCost + yCost + 10000.0;
         else Cost = xCost + yCost;
 
         return Cost;
@@ -106,20 +121,15 @@ public class Agent extends AbstractPlayer{
     }
 
     ArrayList<Node> calculatePath(Node node){
-        ArrayList<Node> aux = new ArrayList<>();
+        //ArrayList<Node> aux = new ArrayList<>();
         ArrayList<Node> path = new ArrayList<>();
 
         while(node != null){
             if(node.parent != null){
-                aux.add(node);
+                node.setMoveDir(node.parent);
+                path.add(0,node);
             }
             node = node.parent;
-        }
-
-        int tam = aux.size()-1;
-
-        for(int i = tam; i >= 0; i--) {
-            path.add(aux.get(i));
         }
 
         return path;
@@ -131,10 +141,10 @@ public class Agent extends AbstractPlayer{
      * @return the list of actions to reach the portal
      */
 
-    Node pathfinding_A(StateObservation stateObs, Node startPos){
+    ArrayList<Node> pathfinding_A(StateObservation stateObs, Node startPos, Node objetivo){
 
         Node node = null;
-        Node obj = new Node(portal);
+        Node obj = objetivo;
 
         PriorityQueue<Node> Abiertos = new PriorityQueue<>();
         PriorityQueue<Node> Cerrados = new PriorityQueue<>();
@@ -149,27 +159,40 @@ public class Agent extends AbstractPlayer{
             node = Abiertos.poll();
             Cerrados.add(node);
 
-            if(node.position.x == portal.x && node.position.y == portal.y) return node;
+            if(node.position.x == obj.position.x && node.position.y == obj.position.y) return calculatePath(node);
 
 
             ArrayList<Node> vecinos = recheable(node, stateObs);
 
 
             for(Node vecino:vecinos){
-                vecino.estimatedCost = coste(vecino, obj, stateObs);
+                double curDistance = vecino.totalCost;
 
                 if(!Abiertos.contains(vecino) && !Cerrados.contains(vecino)){
-                    Abiertos.add(vecino);
+                    vecino.totalCost = curDistance + node.totalCost;
+                    vecino.estimatedCost = coste(vecino,obj,stateObs);
                     vecino.parent = node;
+
+                    Abiertos.add(vecino);
+
                 }
-                else if(vecino.estimatedCost < node.estimatedCost){
-                    Abiertos.remove(node);
+                else if(curDistance + node.totalCost < vecino.totalCost){
+                    vecino.totalCost = curDistance + node.totalCost;
+                    vecino.parent = node;
+
+                    Abiertos.remove(vecino);
+                    Cerrados.remove(vecino);
+                    Abiertos.add(vecino);
                 }
             }
 
         }
 
-        return node;
+        assert node != null;
+
+        if(!(obj.position.x == node.position.x && obj.position.y == node.position.y)) return null;
+
+        return calculatePath(node);
     }
 
 
@@ -190,71 +213,51 @@ public class Agent extends AbstractPlayer{
      */
     @Override
     public ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
+
+        //Tratar el caso en el que solo haya portales
         //Posicion del avatar
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
 
-        Node inicio = new Node(avatar);
+        Node nuevaPos = new Node(avatar);
 
-        Node path_calculado =  pathfinding_A(stateObs, inicio);
+        /*
+        if(avatar.equals(gema)){
+            NumGems++;
+        }
 
-        ArrayList<Node> path = calculatePath(path_calculado);
 
-        Vector2d siguientePos = new Vector2d(path.get(0).position.x, path.get(0).position.y);
+        if(stateObs.getResourcesPositions(stateObs.getAvatarPosition()) != null && NumGems < 10) {
 
-        ACTIONS action = getAction(avatar, siguientePos);
+            //Se crea una lista de observaciones de gemas, ordenada por cercania al avatar
+            ArrayList<Observation>[] gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+            //Seleccionamos la gema mas cercana
+            gema = gemas[0].get(0).position;
+            gema.x = Math.floor(gema.x / fescala.x);
+            gema.y = Math.floor(gema.y / fescala.y);
+            Node obj = new Node(gema);
+            path = pathfinding_A(stateObs, nuevaPos, obj);
+
+        }
+        else{
+            Node obj = new Node(portal);
+            path = pathfinding_A(stateObs, nuevaPos, obj);
+        }
+        */
+        ACTIONS action;
+        
+        /*
+        try{
+            Vector2d siguientePos = path.get(0).position;
+            action = getAction(avatar,siguientePos);
+        }catch (IndexOutOfBoundsException|NullPointerException e){
+            action = ACTIONS.ACTION_NIL;
+        }
+        */
 
         return action;
 
-
-
-
-
-        //Probamos las cuatro acciones y calculamos la distancia del nuevo estado al portal.
-//        Vector2d newPos_up = avatar, newPos_down = avatar, newPos_left = avatar, newPos_right = avatar;
-//        if (avatar.y - 1 >= 0) {
-//            newPos_up = new Vector2d(avatar.x, avatar.y-1);
-//        }
-//        if (avatar.y + 1 <= stateObs.getObservationGrid()[0].length-1) {
-//            newPos_down = new Vector2d(avatar.x, avatar.y+1);
-//        }
-//        if (avatar.x - 1 >= 0) {
-//            newPos_left = new Vector2d(avatar.x - 1, avatar.y);
-//        }
-//        if (avatar.x + 1 <= stateObs.getObservationGrid().length - 1) {
-//            newPos_right = new Vector2d(avatar.x + 1, avatar.y);
-//        }
-//
-//
-//        //Manhattan distance
-          //ArrayList<Integer> distances = new ArrayList<Integer>();
-//        distances.add((int) (Math.abs(newPos_up.x - portal.x) + Math.abs(newPos_up.y - portal.y)));
-//        distances.add((int) (Math.abs(newPos_down.x - portal.x) + Math.abs(newPos_down.y-portal.y)));
-//        distances.add((int) (Math.abs(newPos_left.x - portal.x) + Math.abs(newPos_left.y-portal.y)));
-//        distances.add((int) (Math.abs(newPos_right.x - portal.x) + Math.abs(newPos_right.y-portal.y)));
-
-//        ArrayList<Vector2d> recheable = recheable(stateObs);
-//
-//        for(Vector2d v : recheable) {
-//            distances.add((int) coste(v, stateObs));
-//        }
-//
-//
-//        // Nos quedamos con el menor y tomamos esa accion.
-//        //int minIndex = distances.indexOf(Collections.min(distances));
-//
-//        switch (minIndex) {
-//            case 0:
-//                return Types.ACTIONS.ACTION_UP;
-//            case 1:
-//                return Types.ACTIONS.ACTION_DOWN;
-//            case 2:
-//                return Types.ACTIONS.ACTION_LEFT;
-//            case 3:
-//                return Types.ACTIONS.ACTION_RIGHT;
-//            default:
-//                return Types.ACTIONS.ACTION_NIL;
-//        }
 
     }
 
