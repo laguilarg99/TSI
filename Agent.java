@@ -235,7 +235,6 @@ public class Agent extends AbstractPlayer{
         }
 
         siguientePos = new Vector2d(sol.position.x, sol.position.y);
-        System.out.println(siguientePos);
         return siguientePos;
 
     }
@@ -254,72 +253,85 @@ public class Agent extends AbstractPlayer{
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
 
+        //Siguiente posicion
         Vector2d siguientePos  = new Vector2d(0,0);
+
         Node nuevaPos = new Node(avatar);
 
-        //Se crea una lista de observaciones de NPC, ordenada por cercania al avatar
-        ArrayList<Observation>[] Npc = stateObs.getNPCPositions(stateObs.getAvatarPosition());
-
-
-        //Seleccionamos el npc más cercano
-        Scorpion = Npc[0].get(0).position;
-        Scorpion.x = Math.floor(Scorpion.x/fescala.x);
-        Scorpion.y = Math.floor(Scorpion.y/fescala.y);
-
-        //Mapa de calor
-        Vector2d calor[][] = new Vector2d[7][7];
-
-        for(int i = 0; i < calor.length; i++){
-            for(int j = 0; j < calor[i].length; j++){
-                calor[i][j] = new Vector2d((Scorpion.x - calor.length/2 + i),(Scorpion.y - calor.length/2 + j));
-            }
-        }
-
-        /*
-        if(avatar.equals(gema)){
-            NumGems++;
-        }
-
-
-        if(stateObs.getResourcesPositions(stateObs.getAvatarPosition()) != null && NumGems < 10) {
-
-            //Se crea una lista de observaciones de gemas, ordenada por cercania al avatar
-            ArrayList<Observation>[] gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
-
-            //Seleccionamos la gema mas cercana
-            gema = gemas[0].get(0).position;
-            gema.x = Math.floor(gema.x / fescala.x);
-            gema.y = Math.floor(gema.y / fescala.y);
-            Node obj = new Node(gema);
-            path = pathfinding_A(stateObs, nuevaPos, obj);
-
-        }
-        else{
-            Node obj = new Node(portal);
-            path = pathfinding_A(stateObs, nuevaPos, obj);
-        }
-        */
-
+        //Accion a llevar a cabo
         ACTIONS action;
 
-        /*try{
-            Vector2d siguientePos = path.get(0).position;
-            action = getAction(avatar,siguientePos);
-        }catch (IndexOutOfBoundsException|NullPointerException e){
-            action = ACTIONS.ACTION_NIL;
-        }*/
+        double dis = 0;
 
-        try{
+        if(stateObs.getNPCPositions(stateObs.getAvatarPosition()) != null) {
+            //Se crea una lista de observaciones de NPC, ordenada por cercania al avatar
+            ArrayList<Observation>[] Npc = stateObs.getNPCPositions(stateObs.getAvatarPosition());
 
-            siguientePos = Reactivo(calor,avatar,stateObs);
-            if(siguientePos.x != 0 || siguientePos.y != 0)
-                action = getAction(avatar,siguientePos);
-            else
-                action = ACTIONS.ACTION_NIL;
+            //Seleccionamos el npc más cercano
+            Scorpion = Npc[0].get(0).position;
+            Scorpion.x = Math.floor(Scorpion.x / fescala.x);
+            Scorpion.y = Math.floor(Scorpion.y / fescala.y);
 
-        }catch (IndexOutOfBoundsException|NullPointerException e){
-            action = ACTIONS.ACTION_NIL;
+            dis = Math.abs(Scorpion.x - avatar.x) + Math.abs(Scorpion.y - avatar.y);
+
         }
+
+
+        if(dis != 0 && dis < 6){
+            //Mapa de calor
+            Vector2d calor[][] = new Vector2d[7][7];
+
+            for(int i = 0; i < calor.length; i++){
+                for(int j = 0; j < calor[i].length; j++){
+                    calor[i][j] = new Vector2d((Scorpion.x - calor.length/2 + i),(Scorpion.y - calor.length/2 + j));
+                }
+            }
+
+            try{
+
+                siguientePos = Reactivo(calor,avatar,stateObs);
+                if(siguientePos.x != 0 || siguientePos.y != 0)
+                    action = getAction(avatar,siguientePos);
+                else
+                    action = ACTIONS.ACTION_NIL;
+
+            }catch (IndexOutOfBoundsException|NullPointerException e){
+                action = ACTIONS.ACTION_NIL;
+            }
+        }else {
+
+            if (avatar.equals(gema)) {
+                NumGems++;
+            }
+
+
+            if (stateObs.getResourcesPositions(stateObs.getAvatarPosition()) != null && NumGems < 10) {
+
+                //Se crea una lista de observaciones de gemas, ordenada por cercania al avatar
+                ArrayList<Observation>[] gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+                //Seleccionamos la gema mas cercana
+                gema = gemas[0].get(0).position;
+                gema.x = Math.floor(gema.x / fescala.x);
+                gema.y = Math.floor(gema.y / fescala.y);
+                Node obj = new Node(gema);
+                path = pathfinding_A(stateObs, nuevaPos, obj);
+
+            } else {
+                Node obj = new Node(portal);
+                path = pathfinding_A(stateObs, nuevaPos, obj);
+            }
+
+
+            try {
+                siguientePos = path.get(0).position;
+                action = getAction(avatar, siguientePos);
+            } catch (IndexOutOfBoundsException | NullPointerException e) {
+                action = ACTIONS.ACTION_NIL;
+            }
+
+        }
+
 
         return action;
 
