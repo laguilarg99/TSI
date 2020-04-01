@@ -63,7 +63,7 @@ public class Agent extends AbstractPlayer{
      * Comprueba si una posicion es un obstaculo
      * @param position La posición a comprobar
      * @param stateObs El estado actual
-     * @return whether 'position' there isn't an obstacle
+     * @return devuelve si la posición es un obstáculo
      */
     boolean isObstacle(Node position, StateObservation stateObs){
         int x = (int)position.position.x;
@@ -103,25 +103,6 @@ public class Agent extends AbstractPlayer{
     }
 
 
-    /**
-     * Coste final estimado
-     *
-     * @param pos Posición a la que calcular el coste
-     * @param stateObs Estado actual
-     * @return Coste total estimado
-     */
-    double coste(Node pos, Node obj, StateObservation stateObs){
-        double Cost;
-
-        double xCost = Math.abs(pos.position.x - obj.position.x);
-        double yCost = Math.abs(pos.position.y - obj.position.y);
-
-        if(isObstacle(pos,stateObs)) Cost = xCost + yCost + 10000.0;
-        else Cost = xCost + yCost;
-
-        return Cost;
-
-    }
 
     /**
      * Devuelve el camino a seguir.
@@ -153,14 +134,12 @@ public class Agent extends AbstractPlayer{
 
     ArrayList<Node> pathfinding_A(StateObservation stateObs, Node startPos, Node objetivo){
 
-        Node node = null;
+        Node node;
         Node obj = objetivo;
 
         PriorityQueue<Node> Abiertos = new PriorityQueue<>();
         PriorityQueue<Node> Cerrados = new PriorityQueue<>();
 
-        startPos.totalCost = 0.0f;
-        startPos.estimatedCost = coste(startPos, obj, stateObs);
 
         Abiertos.add(startPos);
 
@@ -171,20 +150,14 @@ public class Agent extends AbstractPlayer{
 
             if(node.position.x == obj.position.x && node.position.y == obj.position.y) return calculatePath(node);
 
-
             ArrayList<Node> vecinos = recheable(node, stateObs);
 
 
-            for(Node vecino:vecinos){
+            for(Node vecino:vecinos) {
 
                 if(!Abiertos.contains(vecino) && !Cerrados.contains(vecino)){
                     vecino.totalCost = vecino.totalCost + node.totalCost;
                     vecino.parent = node;
-
-                    Abiertos.add(vecino);
-
-                }
-                else if(vecino.totalCost + node.totalCost < vecino.totalCost){
                     Abiertos.add(vecino);
                 }
 
@@ -198,9 +171,9 @@ public class Agent extends AbstractPlayer{
 
     /**
      * Devuelve la acción a realizar para moverse de un punto a otro
-     * @param from
-     * @param to
-     * @return
+     * @param from punto desde el que se mueve
+     * @param to punto hacia el que va
+     * @return devuelve la acción a realizar
      */
 
     Types.ACTIONS getAction(Vector2d from, Vector2d to){
@@ -212,7 +185,13 @@ public class Agent extends AbstractPlayer{
 
     }
 
-    Vector2d Reactivo(Vector2d calor[][], Vector2d avatar, StateObservation StateObs){
+    /**
+     * Comportamiento reactivo del agente
+     * @param avatar la posición actual del agente
+     * @param StateObs estado actual
+     * @return devuelve la posición a la que se debe mover el agente para evitar a los escorpiones
+     */
+    Vector2d Reactivo(Vector2d avatar, StateObservation StateObs){
 
         Vector2d siguientePos = new Vector2d(0, 0);
 
@@ -221,18 +200,12 @@ public class Agent extends AbstractPlayer{
 
         double dis = 0;
 
-        for(int i = 0; i < calor.length; i++){
-            for(int j = 0; j < calor[i].length; j++){
-                if(calor[i][j].x == avatar.x && calor[i][j].y == avatar.y){
-                    ArrayList<Node> vecinos = recheable(aux, StateObs);
-                    for(Node vecino : vecinos){
-                        double distancia = Math.abs(Scorpion.x - vecino.position.x) + Math.abs(Scorpion.y - vecino.position.y);
-                        if(distancia > dis){
-                            dis = distancia;
-                            sol = vecino;
-                        }
-                    }
-                }
+        ArrayList<Node> vecinos = recheable(aux, StateObs);
+        for(Node vecino : vecinos){
+            double distancia = Math.abs(Scorpion.x - vecino.position.x) + Math.abs(Scorpion.y - vecino.position.y);
+            if(distancia > dis){
+                dis = distancia;
+                sol = vecino;
             }
         }
 
@@ -241,11 +214,12 @@ public class Agent extends AbstractPlayer{
 
     }
 
+
     /**
-     * return the best action to arrive faster to the closest portal
-     * @param stateObs Observation of the current state.
-     * @param elapsedTimer Timer when the action returned is due.
-     * @return best	ACTION to arrive faster to the closest portal
+     * Devuelve la mejor acción para acercarse al portal sin morir
+     * @param stateObs Estado actual
+     * @param elapsedTimer Temporizador para controlar la ejecución.
+     * @return Devuelve la mejor acción para acercarse al portal sin morir dependiendo del
      */
     @Override
     public ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
@@ -279,19 +253,11 @@ public class Agent extends AbstractPlayer{
         }
 
 
-        if(dis != 0 && dis < 6){
-            //Mapa de calor
-            Vector2d calor[][] = new Vector2d[7][7];
-
-            for(int i = 0; i < calor.length; i++){
-                for(int j = 0; j < calor[i].length; j++){
-                    calor[i][j] = new Vector2d((Scorpion.x - calor.length/2 + i),(Scorpion.y - calor.length/2 + j));
-                }
-            }
+        if(dis != 0 && dis < 4.5){
 
             try{
 
-                siguientePos = Reactivo(calor,avatar,stateObs);
+                siguientePos = Reactivo(avatar,stateObs);
                 if(siguientePos.x != 0 || siguientePos.y != 0)
                     action = getAction(avatar,siguientePos);
                 else
@@ -305,7 +271,6 @@ public class Agent extends AbstractPlayer{
             if (avatar.equals(gema)) {
                 NumGems++;
             }
-
 
             if (stateObs.getResourcesPositions(stateObs.getAvatarPosition()) != null && NumGems < 10) {
 
@@ -334,7 +299,7 @@ public class Agent extends AbstractPlayer{
 
         }
 
-
+        System.out.println(elapsedTimer);
         return action;
 
 
