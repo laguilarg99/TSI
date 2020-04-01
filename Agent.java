@@ -332,7 +332,6 @@ public class Agent extends AbstractPlayer{
 
         }
 
-
         return action;
 
 
