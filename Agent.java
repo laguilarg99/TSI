@@ -1,50 +1,45 @@
 package TSI;
 
-import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.PriorityQueue;
-import java.util.Vector;
 
 import core.game.Observation;
 import core.game.StateObservation;
 import core.player.AbstractPlayer;
-import core.player.Player;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 import tools.pathfinder.Node;
 
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 public class Agent extends AbstractPlayer{
 
     //escala
     Vector2d fescala;
 
-    //posicion del portal
+    //posición del portal
     Vector2d portal;
 
-    //posicion de resources
+    //posición de resources
     Vector2d gema;
 
-    //posicion de NPC
+    //posición de NPC
     Vector2d Scorpion;
 
     //Camino actual
     ArrayList<Node> path = new ArrayList<>();
 
-    //Numero de gemas
+    //Número de gemas
     int NumGems;
 
     /**
-     * initialize all variables for the agent
-     * @param stateObs Observation of the current state.
-     * @param elapsedTimer Timer when the action returned is due.
+     * Inicializa todas las variables del agente
+     * @param stateObs Estado actual de la observación.
+     * @param elapsedTimer Cronómetro de cuando la acción es devuelta.
      */
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
+
         //Calculamos el factor de escala entre mundos (pixeles -> grid)
         fescala = new Vector2d(stateObs.getWorldDimension().width / stateObs.getObservationGrid().length ,
                 stateObs.getWorldDimension().height / stateObs.getObservationGrid()[0].length);
@@ -52,8 +47,10 @@ public class Agent extends AbstractPlayer{
         //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
         ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
 
+        //inicializamos el número de gemas
         NumGems = 0;
-        //Seleccionamos el portal mas proximo
+
+        //Seleccionamos el portal mas próximo
         portal = posiciones[0].get(0).position;
         portal.x = Math.floor(portal.x / fescala.x);
         portal.y = Math.floor(portal.y / fescala.y);
@@ -63,9 +60,9 @@ public class Agent extends AbstractPlayer{
 
 
     /**
-     * checks if there is an obstacle
-     * @param position the position to check
-     * @param stateObs the current state observation
+     * Comprueba si una posicion es un obstaculo
+     * @param position La posición a comprobar
+     * @param stateObs El estado actual
      * @return whether 'position' there isn't an obstacle
      */
     boolean isObstacle(Node position, StateObservation stateObs){
@@ -79,11 +76,12 @@ public class Agent extends AbstractPlayer{
         return false;
     }
 
+
     /**
-     * get (reachable) neighbors from a node
+     * Devuelve una lista de nodos alcanzables desde el nodo actual.
      *
-     * @param stateObs the current state of the game
-     * @return An ArrayList of recheable neighbors
+     * @param stateObs Estado actual del juego
+     * @return Un Arraylist de nodos
      */
     ArrayList<Node> recheable(Node pos, StateObservation stateObs){
         ArrayList<Node> vecinos = new ArrayList<>();
@@ -104,14 +102,14 @@ public class Agent extends AbstractPlayer{
         return vecinos;
     }
 
-    /**
-     * get the final estimated cost
-     *
-     * @param pos postion to calculate the cost
-     * @param stateObs current state
-     * @return total estimated cost
-     */
 
+    /**
+     * Coste final estimado
+     *
+     * @param pos Posición a la que calcular el coste
+     * @param stateObs Estado actual
+     * @return Coste total estimado
+     */
     double coste(Node pos, Node obj, StateObservation stateObs){
         double Cost;
 
@@ -125,8 +123,13 @@ public class Agent extends AbstractPlayer{
 
     }
 
+    /**
+     * Devuelve el camino a seguir.
+     *
+     * @param node nodo final que corresponde con el objetivo calculado por el A*
+     * @return Arraylist de Node que será el camino a seguir
+     */
     ArrayList<Node> calculatePath(Node node){
-        //ArrayList<Node> aux = new ArrayList<>();
         ArrayList<Node> path = new ArrayList<>();
 
         while(node != null){
@@ -140,10 +143,12 @@ public class Agent extends AbstractPlayer{
         return path;
     }
 
-    /** A* algorithm
+    /** Algoritmo A*
      *
-     * @param stateObs current state
-     * @return the list of actions to reach the portal
+     * @param stateObs Estado actual
+     * @param startPos Posicion de comienzo
+     * @param objetivo Posicion del portal
+     * @return La lista de acciones para alacanzar un objetivo
      */
 
     ArrayList<Node> pathfinding_A(StateObservation stateObs, Node startPos, Node objetivo){
@@ -171,35 +176,32 @@ public class Agent extends AbstractPlayer{
 
 
             for(Node vecino:vecinos){
-                double curDistance = vecino.totalCost;
 
                 if(!Abiertos.contains(vecino) && !Cerrados.contains(vecino)){
-                    vecino.totalCost = curDistance + node.totalCost;
-                    vecino.estimatedCost = coste(vecino,obj,stateObs);
+                    vecino.totalCost = vecino.totalCost + node.totalCost;
                     vecino.parent = node;
 
                     Abiertos.add(vecino);
 
                 }
-                else if(curDistance + node.totalCost < vecino.totalCost){
-                    vecino.totalCost = curDistance + node.totalCost;
-                    vecino.parent = node;
-
-                    Abiertos.remove(vecino);
-                    Cerrados.remove(vecino);
+                else if(vecino.totalCost + node.totalCost < vecino.totalCost){
                     Abiertos.add(vecino);
                 }
+
             }
 
         }
 
-        assert node != null;
-
-        if(!(obj.position.x == node.position.x && obj.position.y == node.position.y)) return null;
-
-        return calculatePath(node);
+        return null;
     }
 
+
+    /**
+     * Devuelve la acción a realizar para moverse de un punto a otro
+     * @param from
+     * @param to
+     * @return
+     */
 
     Types.ACTIONS getAction(Vector2d from, Vector2d to){
         if(to.x != from.x)
@@ -331,6 +333,7 @@ public class Agent extends AbstractPlayer{
             }
 
         }
+
 
         return action;
 
