@@ -20,9 +20,7 @@ array[Asignatura] of string: Asignaturas = ["IA","TSI", "FBD"];
 constraint forall(i in 1..2, j in 3..4)(AsigGrupo[3,i] != 10 /\ AsigGrupo[1,j] != 9);
 
 %Horas distintas para que las asignaturas no coincidan
-constraint all_different([AsigGrupo[i,1]|i in Asignatura]);
-constraint all_different([AsigGrupo[i,2]|i in Asignatura]);
-constraint all_different([AsigGrupo[i,3]|i in Asignatura]);
+constraint forall(S in Asignatura)(all_different([AsigGrupo[i,S]|i in Asignatura]));
 
 %Horas distintas para que los profesores no coincidan 
 constraint all_different([AsigGrupo[i,j]| i in 1..2, j in 1..2]);
