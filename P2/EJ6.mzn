@@ -15,11 +15,11 @@ array[1..5] of var Bebida: BEBIDA;
 array[1..5] of var Color: COLOR;
 
 %Condiciones
-constraint all_different(Procedencia);
-constraint all_different(Profesion);
-constraint all_different(Animal);
-constraint all_different(Bebida);
-constraint all_different(Color);
+constraint all_different(PROCEDENCIA);
+constraint all_different(PROFESION);
+constraint all_different(ANIMAL);
+constraint all_different(BEBIDA);
+constraint all_different(COLOR);
 
 constraint PROCEDENCIA[1] = Andaluz; % El andaluz vive en la primera casa de la izquierda.
 constraint BEBIDA[3] = leche; % En la casa central se bebe leche.
