@@ -15,15 +15,16 @@ var 0..available_time: end;
 %Condiciones a cumplir
 
 %Tareas Precedentes
+% constraint all_different(start);
 
-constraint start[B] == Duracion[A]; %A tiene que estar hecho
+constraint start[B] == Duracion[A] + start[A]; %A tiene que estar hecho
 constraint start[C] == Duracion[B] + start[B]; %B tiene que estar hecho
 constraint start[D] == Duracion[A]; %A tiene que estar hecho
-constraint start[E] == max(Duracion[C] + start[C], Duracion[D] + start[D]); % C,D tiene que estar hecho
-constraint start[F] == max(Duracion[C] + start[C], Duracion[D] + start[D]); % C,D tiene que estar hecho
-constraint start[G] == max(Duracion[C] + start[C], Duracion[D] + start[D]); % C,D tiene que estar hecho
+constraint start[E] == Duracion[C] + start[C] + Duracion[D] + start[D]; % C,D tiene que estar hecho
+constraint start[F] == Duracion[C] + start[C] + Duracion[D] + start[D]; % C,D tiene que estar hecho
+constraint start[G] == Duracion[C] + start[C] + Duracion[D] + start[D]; % C,D tiene que estar hecho
 constraint start[H] == Duracion[A] + start[A]; %A tiene que estar hecho
-constraint start[I] == max(Duracion[F] + start[F], Duracion[H] + start[H]); % F,H tiene que estar hecho
+constraint start[I] == Duracion[F] + start[F] + Duracion[H] + start[H]; % F,H tiene que estar hecho
 
 %Minimizar
 constraint cumulative(start , Duracion , Workers, available_workers);
@@ -33,6 +34,7 @@ constraint forall(i in Tareas)(start[i] + Duracion[i] <= end);
 solve minimize end;
 output[show(i) ++": " ++ show(start[i]) ++ "\n" | i in Tareas]++["Tiempo total:" ++ show(end)];
 %++ ": " ++ show([start[i]|i in Tareas]) ++ "\n"];
+
 
 
 
