@@ -7,7 +7,7 @@
     loc4_1 loc4_2 loc4_3 loc4_4 loc4_5 - Localizaciones
     loc5_1 loc5_2 loc5_3 loc5_4 loc5_5 - Localizaciones
     CentroDeMando1 CentroDeMando2 Barracones1 Extractor1 - Edificios
-    
+    Marine1 Marine2 Segador1 VCE1 VCE2 VCE3 - Unidades
 )
 
 (:init
@@ -93,28 +93,35 @@
     (conectado loc5_5 loc5_4)
     (EstaEdificio CentroDeMando loc2_2)
     (Estipo CentroDeMando1 CentroDeMando)
-    (Estipo CentroDeMando2 CentroDeMando)
     (Estipo Barracones1 Barracones)
     (Estipo Extractor1 Extractor)
+    (EstipoU Marine1 Marine)
+    (EstipoU Marine2 Marine)
+    (EstipoU Segador1 Segador)
+    (EstipoU VCE1 VCE)
+    (EstipoU VCE2 VCE)
+    (EstipoU VCE3 VCE)
     (EstaRecurso Minerales loc1_2)
     (EstaRecurso Minerales loc3_1)
     (EstaRecurso Minerales loc5_3)
     (EstaRecurso Gas loc4_3)
     (EstaRecurso Gas loc5_5)
-    (EstaUnidad VCE loc1_5)
-    (EstaUnidad VCE1 loc5_1)
-    (EstaUnidad VCE2 loc5_1)
+    (EstaUnidad VCE1 loc1_5)
     (NecesitaRecurso Barracones Minerales)
     (NecesitaRecurso CentroDeMando Minerales)
     (NecesitaRecurso CentroDeMando Gas)
     (NecesitaRecurso Extractor Minerales)
+    (NecesitaRecursoU VCE Minerales)
+    (NecesitaRecursoU Marine Minerales)
+    (NecesitaRecursoU Segador Minerales)
+    (NecesitaRecursoU Segador Gas)
     ;todo: put the initial state's facts and numeric values here
 )
 
 (:goal (and
-    (Construyendo Barracones1 VCE1 loc3_3)
-    ;(Construyendo Extractor1 VCE loc4_3)
-    ;(Construyendo CentroDeMando2 VCE loc4_5)
+    (EstaUnidad Marine1 loc2_1)
+    (EstaUnidad Marine2 loc4_3)
+    (EstaUnidad Segador1 loc2_1)
     ;todo: put the goal condition here
 ))
 
