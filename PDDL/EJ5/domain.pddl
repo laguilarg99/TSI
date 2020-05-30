@@ -11,7 +11,7 @@
 ; un-comment following line if constants are needed
 (:constants
     Marine Segador VCE - TipoUnidades;
-    CentroDeMando Barracones Extractor BahiaDeIngenieria - TipoEdificio
+    CentroDeMando Barracones Extractor BahiaDeIngenieria Deposito - TipoEdificio
     Minerales Gas - Recursos
     ImpulsoSegador - Investigacion
 )
@@ -60,28 +60,17 @@
                         (EstaUnidad ?Unidad ?local)
                         (EstaRecurso ?Recurso ?local)
                         (EstipoU ?Unidad VCE)
+                        (or(not(= ?Recurso Gas))(EstaEdificio Extractor ?Local))
                     )
     :effect (and 
-                (when(and(= ?Recurso Minerales))
-                    (and
-                        (ExtrayendoRecurso ?Recurso)
-                        (Asignar ?Unidad)
-                    )
-                )
-                (when(and
-                (EstaEdificio Extractor ?Local)
-                (= ?Recurso Gas))
-                    (and
-                        (ExtrayendoRecurso ?Recurso)
-                        (Asignar ?Unidad)
-                    )
-                )
+                (ExtrayendoRecurso ?Recurso)
+                (Asignar ?Unidad)
             )
 )
 
 
 (:action Construir
-    :parameters (?Unidad - Unidades ?Unidad1 - Unidades  ?Edificio - Edificios ?Tipo - TipoEdificio ?local1 - Localizaciones)
+    :parameters (?Unidad1 - Unidades  ?Edificio - Edificios ?Tipo - TipoEdificio ?local1 - Localizaciones)
     :precondition   
                     (and
                         (Estipo ?Edificio ?Tipo)
@@ -101,46 +90,33 @@
 )
 
 (:action Reclutar
-    :parameters (?Unidad - Unidades ?Unidad1 - Unidades ?Tipo - TipoUnidades ?local - Localizaciones ?local1 - Localizaciones)
+    :parameters (?Unidad - Unidades ?Tipo - TipoUnidades ?local - Localizaciones)
     :precondition (and
                         (EstipoU ?Unidad ?Tipo)
                         (forall (?Recurso1 - Recursos)(or 
                             (not (NecesitaRecursoU ?Tipo ?Recurso1))
                             (ExtrayendoRecurso ?Recurso1)))
-                        (EstaUnidad ?Unidad1 ?local1)
                         (not(Reclutado ?Unidad))
+                        (or
+                            (and
+                                (EstipoU ?Unidad VCE)
+                                (EstaEdificio CentroDeMando ?local)
+                            )
+                            (and
+                                (or
+                                    (EstipoU ?Unidad Marine)
+                                    (EstipoU ?Unidad Segador)
+                                )
+                                (and
+                                    (EstaEdificio Barracones ?local)
+                                )
+                            )
+                        )
                     )
     :effect (and 
-        
-        (when(and
-                (EstipoU ?Unidad Marine)
-                (EstaEdificio Barracones ?Local)
-                )
-                    (and
-                        (Reclutado ?Unidad)
-                        (EstaUnidad ?Unidad ?local)
-                    )
-        )
-        (when(and
-                (EstipoU ?Unidad Segador)
-                (Investigado ImpulsoSegador)
-                (EstaEdificio Barracones ?Local)
-                )
-                    (and
-                        (Reclutado ?Unidad)
-                        (EstaUnidad ?Unidad ?local)
-                    )
-        )
-
-        (when(and
-                (EstipoU ?Unidad VCE)
-                (EstaEdificio CentroDeMando ?Local)
-                )
-                    (and
-                        (Reclutado ?Unidad)
-                        (EstaUnidad ?Unidad ?local)
-                    )
-        )
+        (Reclutado ?Unidad)
+        (EstaUnidad ?Unidad ?local)
+      
     )
 )
 
@@ -153,9 +129,10 @@
                             (ExtrayendoRecurso ?Recurso1)))
                     )
     :effect (and 
-        
                 (Investigado ImpulsoSegador)
             )
 )
+
+
 
 )
