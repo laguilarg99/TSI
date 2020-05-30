@@ -107,9 +107,7 @@
 )
 
 (:goal (and
-    ;(Construyendo Barracones1 VCE1 loc3_3)
-    ;(Construyendo Extractor1 VCE loc4_3)
-    (Construyendo CentroDeMando2 VCE loc4_5)
+    (Construyendo Barracones1 VCE1 loc3_3)
     ;todo: put the goal condition here
 ))
 

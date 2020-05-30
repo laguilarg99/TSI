@@ -103,13 +103,13 @@
                                 (EstaEdificio CentroDeMando ?local)
                             )
                             (and
-                                (or
-                                    (EstipoU ?Unidad Marine)
-                                    (EstipoU ?Unidad Segador)
-                                )
-                                (and
-                                    (EstaEdificio Barracones ?local)
-                                )
+                                (EstipoU ?Unidad Marine)
+                                (EstaEdificio Barracones ?local)
+                            )
+                            (and
+                                (EstipoU ?Unidad Segador)
+                                (EstaEdificio Barracones ?local)
+                                (Investigado ImpulsoSegador)
                             )
                         )
                     )

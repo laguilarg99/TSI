@@ -1,4 +1,4 @@
-(define (problem Ejercicio3) (:domain Terran)
+(define (problem Ejercicio4) (:domain Terran)
 (:objects 
     VCE1 VCE2 - Unidades
     loc1_1 loc1_2 loc1_3 loc1_4 loc1_5 - Localizaciones
