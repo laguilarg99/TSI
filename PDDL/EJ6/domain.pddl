@@ -87,6 +87,7 @@
                         (EstaUnidad ?Unidad1 ?local1)
                         (not(Construido ?Edificio))
                         (not(Asignar ?Unidad1))
+                        
                     )
                     
     :effect (and 
@@ -96,6 +97,12 @@
                 (forall (?Recurso1 - Recursos)
                     (and
                         (decrease (Deposito ?Recurso1) (Coste ?Tipo ?Recurso1))
+                    )
+                )
+                (when(and
+                (= ?Tipo Deposito))
+                    (and
+                        (increase (NumeroDeposito Deposito) 1)
                     )
                 )
             )
@@ -162,10 +169,10 @@
     :precondition (and
                     (> (UnidadesPorRecurso ?Recurso) 0)
                     (ExtrayendoRecurso ?Recurso)
-
+                    (<= (Deposito ?Recurso) (* (NumeroDeposito Deposito) 100) )
                   )
     :effect (and    
-        (increase (Deposito ?Recurso) (* 20 (UnidadesPorRecurso ?Recurso)) )
+        (increase (Deposito ?Recurso) (* 25 (UnidadesPorRecurso ?Recurso)) )
     )
 )
 
