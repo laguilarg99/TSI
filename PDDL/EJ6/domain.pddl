@@ -124,15 +124,16 @@
                                 (EstaEdificio CentroDeMando ?local)
                             )
                             (and
-                                (or
-                                    (EstipoU ?Unidad Marine)
-                                    (EstipoU ?Unidad Segador)
-                                )
-                                (and
-                                    (EstaEdificio Barracones ?local)
-                                )
+                                (EstipoU ?Unidad Marine)
+                                (EstaEdificio Barracones ?local)
+                            )
+                            (and
+                                (EstipoU ?Unidad Segador)
+                                (EstaEdificio Barracones ?local)
+                                (Investigado ImpulsoSegador)
                             )
                         )
+                        
                     )
     :effect (and 
         (Reclutado ?Unidad)
@@ -169,7 +170,7 @@
     :precondition (and
                     (> (UnidadesPorRecurso ?Recurso) 0)
                     (ExtrayendoRecurso ?Recurso)
-                    (<= (Deposito ?Recurso) (* (NumeroDeposito Deposito) 100) )
+                    (<= (Deposito ?Recurso) (- (* (NumeroDeposito Deposito) 100) (* 25 (UnidadesPorRecurso ?Recurso))))
                   )
     :effect (and    
         (increase (Deposito ?Recurso) (* 25 (UnidadesPorRecurso ?Recurso)) )
