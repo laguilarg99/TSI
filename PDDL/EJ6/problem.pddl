@@ -6,7 +6,7 @@
     loc3_1 loc3_2 loc3_3 loc3_4 loc3_5 - Localizaciones
     loc4_1 loc4_2 loc4_3 loc4_4 loc4_5 - Localizaciones
     loc5_1 loc5_2 loc5_3 loc5_4 loc5_5 - Localizaciones
-    CentroDeMando1 CentroDeMando2 Barracones1 BahiaDeIngenieria1 Extractor1 - Edificios
+    CentroDeMando1 CentroDeMando2 Barracones1 BahiaDeIngenieria1 Extractor1 Deposito1 Deposito2 - Edificios
     Marine1 Marine2 Segador1 VCE1 VCE2 VCE3 - Unidades
     ImpulsoSegador1 - Investigacion
 )
@@ -93,10 +93,14 @@
     (conectado loc5_5 loc4_5)
     (conectado loc5_5 loc5_4)
     (EstaEdificio CentroDeMando loc2_2)
+    (EstaEdificio Deposito loc2_3)
     (Estipo CentroDeMando1 CentroDeMando)
+    (Estipo CentroDeMando2 CentroDeMando)
     (Estipo Barracones1 Barracones)
     (Estipo Extractor1 Extractor)
     (Estipo BahiaDeIngenieria1 BahiaDeIngenieria)
+    (Estipo Deposito1 Deposito)
+    (Estipo Deposito2 Deposito)
     (EstipoU Marine1 Marine)
     (EstipoU Marine2 Marine)
     (EstipoU Segador1 Segador)
@@ -110,25 +114,37 @@
     (EstaRecurso Gas loc5_5)
     (EstaUnidad VCE1 loc1_4)
     (Reclutado VCE1)
-    (NecesitaRecurso Barracones Minerales)
-    (NecesitaRecurso CentroDeMando Minerales)
-    (NecesitaRecurso CentroDeMando Gas)
-    (NecesitaRecurso BahiaDeIngenieria Minerales)
-    (NecesitaRecurso BahiaDeIngenieria Gas)
-    (NecesitaRecurso Extractor Minerales)
-    (NecesitaRecursoU VCE Minerales)
-    (NecesitaRecursoU Marine Minerales)
-    (NecesitaRecursoU Segador Minerales)
-    (NecesitaRecursoU Segador Gas)
-    (NecesitaRecursoI ImpulsoSegador Minerales)
-    (NecesitaRecursoI ImpulsoSegador Gas)
+    (= (Coste CentroDeMando Minerales) 150)
+    (= (Coste CentroDeMando Gas) 50)
+    (= (Coste Barracones Minerales) 150)
+    (= (Coste Barracones Gas) 0)
+    (= (Coste Extractor Minerales) 75)
+    (= (Coste Extractor Gas) 0)
+    (= (Coste BahiaDeIngenieria Minerales) 125)
+    (= (Coste BahiaDeIngenieria Gas) 0)
+    (= (Coste Deposito Minerales) 75)
+    (= (Coste Deposito Gas) 25)
+    (= (CosteU VCE Minerales) 50)
+    (= (CosteU VCE Gas) 0)
+    (= (CosteU Marine Minerales) 50)
+    (= (CosteU Marine Gas) 0)
+    (= (CosteU Segador Minerales) 50)
+    (= (CosteU Segador Gas) 50)
+    (= (CosteI ImpulsoSegador Minerales) 50)
+    (= (CosteI ImpulsoSegador Gas) 200)
+    (= (NumeroDeposito Deposito) 1)
+    (= (UnidadesPorRecurso Minerales) 0)
+    (= (UnidadesPorRecurso Gas) 0)
+    (= (Deposito Minerales) 0)
+    (= (Deposito Gas) 0)
     ;todo: put the initial state's facts and numeric values here
 )
 
 (:goal (and
-    (EstaUnidad Marine1 loc2_1)
-    (EstaUnidad Marine2 loc4_3)
-    (EstaUnidad Segador1 loc2_1)
+    (Construido Barracones1)
+    ; (EstaUnidad Marine1 loc2_1)
+    ; (EstaUnidad Marine2 loc4_3)
+    ; (EstaUnidad Segador1 loc2_1)
     ;todo: put the goal condition here
 ))
 
