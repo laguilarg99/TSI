@@ -93,6 +93,11 @@
                 (Construyendo ?Edificio ?Unidad1 ?local1)
                 (EstaEdificio ?Tipo ?local1)
                 (Construido ?Edificio)
+                (forall (?Recurso1 - Recursos)
+                    (and
+                        (decrease (Deposito ?Recurso1) (Coste ?Tipo ?Recurso1))
+                    )
+                )
             )
 
 )
@@ -125,6 +130,11 @@
     :effect (and 
         (Reclutado ?Unidad)
         (EstaUnidad ?Unidad ?local)
+        (forall (?Recurso1 - Recursos)
+            (and
+                (decrease (Deposito ?Recurso1) (CosteU ?Tipo ?Recurso1))
+            )
+        )
     )
 )
 
@@ -138,6 +148,11 @@
                     )
     :effect (and 
                 (Investigado ImpulsoSegador)
+                (forall (?Recurso1 - Recursos)
+                    (and
+                        (decrease (Deposito ?Recurso1) (CosteI ?Invest ?Recurso1))
+                    )
+                )
             )
 )
 
@@ -149,19 +164,8 @@
                     (ExtrayendoRecurso ?Recurso)
 
                   )
-    :effect (and 
-        
-        (when(and
-                (> (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
-                )
-                        (assign (Deposito ?Recurso) (* 100 (NumeroDeposito Deposito)) )
-        )
-        (when(and
-                (< (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
-                )
-                        (increase (Deposito ?Recurso) (* 20 (UnidadesPorRecurso ?Recurso)) )
-        )
-    
+    :effect (and    
+        (increase (Deposito ?Recurso) (* 20 (UnidadesPorRecurso ?Recurso)) )
     )
 )
 
