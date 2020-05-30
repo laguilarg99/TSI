@@ -102,9 +102,9 @@
     :precondition (and
                         (EstipoU ?Unidad ?Tipo)
                        
-                        (forall (?Recurso1 - Recursos)
-                            (< (CosteU ?Tipo ?Recurso1) (Deposito ?Recurso1))
-                        )
+                       (forall (?Recurso1 - Recursos)(or 
+                            (not (NecesitaRecursoU ?Tipo ?Recurso1))
+                            (< (CosteU ?Tipo ?Recurso1) (Deposito ?Recurso1))))
                         (not(Reclutado ?Unidad))
                         (or
                             (and
@@ -132,9 +132,9 @@
     :parameters (?Invest - Investigacion ?local - Localizaciones)
     :precondition (and
                         (EstaEdificio BahiaDeIngenieria ?Local)
-                        (forall (?Recurso1 - Recursos)
-                            (< (CosteI ?Invest ?Recurso1) (Deposito ?Recurso1))
-                        )
+                        (forall (?Recurso1 - Recursos)(or 
+                            (not (NecesitaRecursoI ?Invest ?Recurso1))
+                            (< (CosteI ?Invest ?Recurso1) (Deposito ?Recurso1))))
                     )
     :effect (and 
                 (Investigado ImpulsoSegador)
@@ -147,9 +147,20 @@
     :precondition (and
                     (> (UnidadesPorRecurso ?Recurso) 0)
                     (ExtrayendoRecurso ?Recurso)
+
                   )
     :effect (and 
-        (increase (Deposito ?Recurso) (* 10 (UnidadesPorRecurso ?Recurso)))
+        
+        (when(and
+                (> (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
+                )
+                        (assign (Deposito ?Recurso) (* 100 (NumeroDeposito Deposito)) )
+        )
+        (when(and
+                (< (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
+                )
+                        (increase (Deposito ?Recurso) (* 20 (UnidadesPorRecurso ?Recurso)) )
+        )
     
     )
 )

@@ -11,7 +11,7 @@
 ; un-comment following line if constants are needed
 (:constants
     Marine Segador VCE - TipoUnidades;
-    CentroDeMando Barracones Extractor BahiaDeIngenieria Deposito - TipoEdificio
+    CentroDeMando Barracones Extractor BahiaDeIngenieria - TipoEdificio
     Minerales Gas - Recursos
     ImpulsoSegador - Investigacion
 )

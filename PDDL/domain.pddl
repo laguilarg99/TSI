@@ -180,16 +180,12 @@
         (when(and
                 (> (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
                 )
-                    (and
                         (assign (Deposito ?Recurso) (* 100 (NumeroDeposito Deposito)) )
-                    )
         )
         (when(and
                 (< (Deposito ?Recurso) (- (* 100 (NumeroDeposito Deposito)) (* 20 (UnidadesPorRecurso ?Recurso))) )
                 )
-                    (and
                         (increase (Deposito ?Recurso) (* 20 (UnidadesPorRecurso ?Recurso)) )
-                    )
         )
     
     )

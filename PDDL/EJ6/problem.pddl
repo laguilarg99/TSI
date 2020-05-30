@@ -148,10 +148,10 @@
 )
 
 (:goal (and
-    (Construyendo Barracones1 VCE1 loc4_3)
-    ; (EstaUnidad Marine1 loc2_1)
-    ; (EstaUnidad Marine2 loc4_3)
-    ; (EstaUnidad Segador1 loc2_1)
+    ; (Construyendo Barracones1 VCE1 loc4_3)
+    (EstaUnidad Marine1 loc2_1)
+    (EstaUnidad Marine2 loc4_3)
+    (EstaUnidad Segador1 loc2_1)
     ;todo: put the goal condition here
 ))
 
